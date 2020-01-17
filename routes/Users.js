@@ -1,19 +1,22 @@
 const express = require('express');
 const users = express.Router();
-const cors = require('cors');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
+const cors = require('cors'); //Indique le ou les domaines pour lesquels la ressource peut être partagée.
+const jwt = require('jsonwebtoken'); // JWT : token permettant d’échanger des informations de manière sécurisée
+const bcrypt = require('bcrypt'); // Permet le hashage
 
+// Permet l'acces aux models
 const User = require('../models/User');
 const Banker = require('../models/Banker');
 const Transfer = require('../models/Transfer');
 const Account = require('../models/Account');
+const Depot = require('../models/Depot');
 
 
 users.use(cors());
 
 process.env.SECRET_KEY = 'secret';
 
+// Creer un User
 users.post('/user_register', (req, res) => {
   const userData = {
     firstname: req.body.firstname,
@@ -23,13 +26,12 @@ users.post('/user_register', (req, res) => {
     adress: req.body.adress,
     phonenumber: req.body.phonenumber
   }
-
+  // Test si un User avec cet email existe deja
   User.findOne({
     where: {
       mailadress: req.body.mailadress
     }
   })
-    //TODO bcrypt
     .then(user => {
       if (!user) {
         bcrypt.hash(req.body.passworduser, 10, (err, hash) => {
@@ -51,10 +53,7 @@ users.post('/user_register', (req, res) => {
     })
 })
 
-
-
-
-
+// Permet de connecter un User apres avoir verifier son email
 users.post('/user_login', (req, res) => {
   User.findOne({
     where: {
@@ -63,10 +62,9 @@ users.post('/user_login', (req, res) => {
   })
     .then(user => {
       if (user) {
-         console.log("ok1"+'\n'+req.body.passworduser+'\n'+user.passworduser);
         if (bcrypt.compareSync(req.body.passworduser, user.passworduser)) {
           let token = jwt.sign(user.dataValues, process.env.SECRET_KEY, {
-            expiresIn: 1440000
+            expiresIn: 1440
           })
           res.send(token);
         }
@@ -83,19 +81,16 @@ users.post('/user_login', (req, res) => {
     })
 })
 
+// Accede au profile du User
 users.get('/user_profile', (req, res) => {
-  console.log(req.headers['authorization']);
   let bearer = req.headers['authorization'];
   if(bearer.startsWith('Bearer ')){
       let test = bearer.replace('Bearer ','');
-
-      console.log('test : '+test);
       var decoded = jwt.verify(test, process.env.SECRET_KEY);
   }
   else{
       var decoded = jwt.verify(bearer, process.env.SECRET_KEY);
   }
-
 
   User.findOne({
     where: {
@@ -114,6 +109,7 @@ users.get('/user_profile', (req, res) => {
     })
 })
 
+// Creer un compte Banker
 users.post('/banker_register', (req, res) => {
   const userData = {
     userid: req.body.userid,
@@ -122,13 +118,12 @@ users.post('/banker_register', (req, res) => {
     mailadress: req.body.mailadress,
     passwordbanker: req.body.passworduser
   }
-
+//Test si compte Banker avec cet adresse email existe deja
   Banker.findOne({
     where: {
       mailadress: req.body.mailadress
     }
   })
-    //TODO bcrypt
     .then(banker => {
       if (!banker) {
         bcrypt.hash(req.body.passwordbanker, 10, (err, hash) => {
@@ -150,10 +145,7 @@ users.post('/banker_register', (req, res) => {
     })
 })
 
-
-
-
-
+// Connecte un Banker
 users.post('/banker_login', (req, res) => {
   Banker.findOne({
     where: {
@@ -181,6 +173,7 @@ users.post('/banker_login', (req, res) => {
     })
 })
 
+// Accede au profile du Banker
 users.get('/banker_profile', (req, res) => {
   let bearer = req.headers['authorization'];
   if(bearer.startsWith('Bearer ')){
@@ -190,7 +183,6 @@ users.get('/banker_profile', (req, res) => {
   else{
       var decoded = jwt.verify(bearer, process.env.SECRET_KEY);
   }
-
 
   User.findOne({
     where: {
@@ -209,6 +201,7 @@ users.get('/banker_profile', (req, res) => {
     })
 })
 
+// Effectue un transfert d'argent
 users.post('/transfer', (req, res) => {
   const userData = {
     senderid: req.body.senderid,
@@ -220,7 +213,6 @@ users.post('/transfer', (req, res) => {
     res.send('C\'est débilé');
   }
   else{
-
     if(Math.sign(req.body.amount)==1){
     Transfer.create(userData)
             .then(transfer => {
@@ -231,15 +223,31 @@ users.post('/transfer', (req, res) => {
             })
     }
     else{
-
       res.send('T\'es serieux mon gars ? Mets un nombre positif');
-
     }
-
   }
-  
 })
 
+// Effectue un depot d'argent
+users.post('/depot', (req, res) => {
+  const today = new Date()
+  const userData = {
+    iddepot: req.body.iddepot,
+    creationdate: today,
+    destinationid: req.body.destinationid,
+    amount: req.body.amount,
+    description: req.body.description,
+  }
+  Depot.create(userData)
+            .then(transfer => {
+              res.json({  Depot : 'Created!' });
+            })
+            .catch(err => {
+              res.send('error');
+            })
+})
+
+// Creer un compte pour un User
 users.post('/create_account', (req, res) => {
   const today = new Date()
   const userData = {
@@ -248,7 +256,6 @@ users.post('/create_account', (req, res) => {
     accountlimit: req.body.accountlimit,
     creationdate: today
   }
-
   Account.create(userData)
             .then(transfer => {
               res.json({  Account : 'Created!' });
@@ -258,7 +265,7 @@ users.post('/create_account', (req, res) => {
             })
 })
 
-
+// Efface un compte d'un User
 users.delete('/delete_account', (req, res) => {
   const userData = {
     idaccount: req.body.idaccount
@@ -277,7 +284,7 @@ users.delete('/delete_account', (req, res) => {
 });
 })
 
-
+// Retourne un compte
 users.get('/get_account/:id', (req, res) => {
 
   const account = parseInt(req.params.id);
@@ -300,10 +307,9 @@ users.get('/get_account/:id', (req, res) => {
     })
 })
 
+// Retourne un User
 users.get('/get_user/:id', (req, res) => {
-
   const account = parseInt(req.params.id);
-
 
   User.findOne({
     where: {

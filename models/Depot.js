@@ -2,25 +2,24 @@ const Sequelize = require('sequelize');
 const db = require('../database/db.js');
 
 module.exports = db.sequelize.define(
-  'account',
+  'depot',
   {
-    idaccount: {
+    iddepot: {
       type: Sequelize.INTEGER,
       primaryKey: true,
       autoIncrement: true
     },
-    iduser: {
+    creationdate: {
+      type: Sequelize.DATE
+    },
+    destinationid: {
       type: Sequelize.INTEGER
     },
     amount: {
       type: Sequelize.INTEGER
     },
-    accountlimit: {
-      type: Sequelize.INTEGER
-    },
-    creationdate: {
-      type: Sequelize.DATE,
-      defaultValue: Sequelize.NOW
+    description: {
+      type: Sequelize.STRING
     }
   },
   {
