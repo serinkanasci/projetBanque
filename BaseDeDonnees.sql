@@ -40,22 +40,3 @@ CREATE TABLE IF NOT EXISTS Banker (
   mailAdress VARCHAR(255) NOT NULL,
   passwordBanker VARCHAR(250) NOT NULL
 );
-
-
-INSERT INTO Users(idUser, firstName, lastName, mailAdress, passwordUser, adress, phoneNumber) VALUES
-    (1, 'Bob', 'boum', 'bobBoum@gmail.com','bobboum','22 rue Jean Jaures 75019','06.42.35.15.78'),
-    (2, 'John', 'Doe', 'johnDoe@gmail.com','johndoe','17 rue Lafayette 75010','07.84.56.32.15');
-
-INSERT INTO Banker(bankerId, userId, firstName, lastName, mailAdress, passwordBanker) VALUES
-    (1, 2, 'Loren', 'Ipsum', 'lorenIpsum@gmail.com','lorenipsum'),
-    (2, 1, 'John', 'Wick', 'johnWick@gmail.com','johnwick');
-
-INSERT INTO Account(idAccount, idUser, amount, accountLimit, creationDate) VALUES
-    (1, 2, 1 , 0,'2014-07-18'),
-    (2, 2, 250, 10,'2019-03-1'),
-    (3, 1, 14500, 5000,'2016-06-23'),
-    (4, 1, 7500, 1000,'2013-11-9');
-
-INSERT INTO Transfer(idTransfer , senderId, receiverId, amount, description) VALUES
-    (1, 2, 1, 75, 'Besoin d argent SVP'),
-    (2, 1, 2, 450, 'Je suis pauvre');
