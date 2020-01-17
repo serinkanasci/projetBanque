@@ -64,7 +64,7 @@ users.post('/user_login', (req, res) => {
       if (user) {
         if (bcrypt.compareSync(req.body.passworduser, user.passworduser)) {
           let token = jwt.sign(user.dataValues, process.env.SECRET_KEY, {
-            expiresIn: 1440
+            expiresIn: 1440000
           })
           res.send(token);
         }
